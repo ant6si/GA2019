@@ -6,7 +6,7 @@
 #define HW_1_GRAPHHANDLER_H
 #include <bitset>
 #include <list>
-#define L 500
+#define L 1000
 
 using namespace std;
 
@@ -34,6 +34,7 @@ public:
         _sequence = bitset<L>(0);
         _score = 0;
     }
+    /*
 public:
     bool operator< (Chromosome& rval) {
         long s1 = this->_score;
@@ -41,6 +42,7 @@ public:
 
         return (s1 < s2);
     }
+     */
 };
 
 class GraphHandler {
