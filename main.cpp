@@ -24,10 +24,10 @@ using namespace std;
 
 
 
-void do_GA(string filename){
+void do_GA(string input_file, ofstream& file_out){
     srand(time(NULL));
     time_t st = time(NULL);
-    GraphHandler gh = GraphHandler(filename);
+    GraphHandler gh = GraphHandler(input_file);
 
 //    gh.print();
     vector<Chromosome*>* population = new vector<Chromosome*>();
@@ -38,6 +38,7 @@ void do_GA(string filename){
     int total_best = -999999999;
     int best_score = -999999999;
     int epoch=0;
+    float last_converge;
     int xover_per_generation = int(POPULATION_SIZE * XOVER_RATIO);
     ///GA Start
     while(remain >0 ){
@@ -80,13 +81,14 @@ void do_GA(string filename){
         }
 
         epoch++;
+        float converge = how_converge(population);
         //if (true){
        if(epoch%10==0){
-            float converge = how_converge(population);
-            cout<< "time:"<<(time(NULL)-st)<<"/ epoch: " << epoch << "/ best_score: "<< best_score<<"/ converge: "<< converge << "/ offspring num: "<< offsprings->size()<<endl;
+            //cout<< "time:"<<(time(NULL)-st)<<"/ epoch: " << epoch << "/ best_score: "<< best_score<<"/ converge: "<< converge <<endl;
             //cout<<best_score<<endl;
         }
         remain = TIME_LIMIT-(time(NULL)-st);
+        last_converge = converge;
 
         // Added to free memory
         while(!offsprings->empty()) {
@@ -98,7 +100,9 @@ void do_GA(string filename){
         offsprings->clear();
         delete(offsprings);
     }
-    printVec(population);
+
+    file_out<< "time:"<<(time(NULL)-st)<<"/ epoch: " << epoch << "/ best_score: "<< best_score<<"/ converge: "<< last_converge <<endl;
+//printVec(population);
 }
 
 int main(int argc, char** argv) {
@@ -110,9 +114,31 @@ int main(int argc, char** argv) {
         output_file = string(argv[2]);
     }
     else{
-        input_file = "instance2.txt";
+        input_file = "input/instance2.txt";
+        output_file = "hello.txt";
     }
-    do_GA(input_file);
+    
+    ofstream file_out;
+    file_out.open(output_file.c_str());
+    
+    for (int ps = 50; ps<350; ps+=50){
+        for(int xr = 1; xr<10; xr++){
+            for(int mr = 3; mr<34; mr+=10){
+                for(int optr=1; optr<10; optr++){
+                        POPULATION_SIZE = ps;
+                        XOVER_RATIO = xr/10.0;
+                        MUTATION_RATE = mr*0.05;
+                        OPTIMIZE_RATIO = optr/10.0;
+                        file_out<<"POPULATION: "<<POPULATION_SIZE<<"/ XOVER: "<<XOVER_RATIO<<"/ MUATION: "<<MUTATION_RATE<<"/ OPTIMIZE: "<<OPTIMIZE_RATIO<<endl;
+                        for(int count=0; count<50; count++){
+                            do_GA(input_file, file_out);
+                        }
+                }
+            }
+        }
+    }
+    file_out.close();
+
     ///FOR SUBMIT
     /*
     sort( population->begin(), population->end(), compare);

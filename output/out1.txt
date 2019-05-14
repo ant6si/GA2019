@@ -1,0 +1,11 @@
+POPULATION: 50/ XOVER: 0.1/ MUATION: 0.15/ OPTIMIZE: 0.1
+time:178/ epoch: 109868/ best_score: 91/ converge: 0.98
+time:178/ epoch: 111580/ best_score: 97/ converge: 0.98
+time:178/ epoch: 110254/ best_score: 94/ converge: 1
+time:178/ epoch: 111153/ best_score: 92/ converge: 0.94
+time:178/ epoch: 112172/ best_score: 96/ converge: 0.92
+time:178/ epoch: 111802/ best_score: 92/ converge: 0.96
+time:178/ epoch: 111987/ best_score: 95/ converge: 1
+time:178/ epoch: 112255/ best_score: 94/ converge: 0.92
+time:178/ epoch: 112392/ best_score: 99/ converge: 0.96
+time:178/ epoch: 110652/ best_score: 89/ converge: 0.94
