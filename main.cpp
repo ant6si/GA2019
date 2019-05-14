@@ -25,25 +25,25 @@ using namespace std;
 
 
 void do_GA(string filename){
-    srand(time(nullptr));
-    time_t st = time(nullptr);
+    srand(time(NULL));
+    time_t st = time(NULL);
     GraphHandler gh = GraphHandler(filename);
 
 //    gh.print();
-    auto* population = new vector<Chromosome*>();
+    vector<Chromosome*>* population = new vector<Chromosome*>();
     MAX_NUM = gh.get_V();
     gen_population(population, &gh);
     sort(population->begin(), population->end(), compare);
     time_t remain = TIME_LIMIT-(time(NULL)-st);
-
     int total_best = -999999999;
     int best_score = -999999999;
     int epoch=0;
+    int xover_per_generation = int(POPULATION_SIZE * XOVER_RATIO);
     ///GA Start
     while(remain >0 ){
-        auto* offsprings = new vector<Chromosome*>();
-        for (int count=0; count < XOVER_PER_GENERATION; ++count){
-            auto* offspring = new Chromosome();
+        vector<Chromosome*>* offsprings = new vector<Chromosome*>();
+        for (int count=0; count < xover_per_generation; ++count){
+            Chromosome* offspring = new Chromosome();
             // Selection
             int p1 = select_random();
             int p2 = p1;
@@ -64,8 +64,12 @@ void do_GA(string filename){
         // Sort
         sort( population->begin(), population->end(), compare);
         // Replacement
+        //replace_elitism(offsprings, population);
         replace_worse(offsprings, population);
         sort( population->begin(), population->end(), compare);
+        //local optimization
+        do_local_optimize(population, &gh);
+        sort(population->begin(), population->end(), compare);
 
         // print best
         best_score = get_best_score(population);
@@ -76,12 +80,13 @@ void do_GA(string filename){
         }
 
         epoch++;
-        if (epoch%100==0){
+        //if (true){
+       if(epoch%10==0){
             float converge = how_converge(population);
             cout<< "time:"<<(time(NULL)-st)<<"/ epoch: " << epoch << "/ best_score: "<< best_score<<"/ converge: "<< converge << "/ offspring num: "<< offsprings->size()<<endl;
             //cout<<best_score<<endl;
         }
-        remain = TIME_LIMIT-(time(nullptr)-st);
+        remain = TIME_LIMIT-(time(NULL)-st);
 
         // Added to free memory
         while(!offsprings->empty()) {
@@ -96,8 +101,18 @@ void do_GA(string filename){
     printVec(population);
 }
 
-int main() {
-    do_GA("instance3.txt");
+int main(int argc, char** argv) {
+    string input_file;
+    string output_file;
+
+    if(argc == 3){
+        input_file = string(argv[1]);
+        output_file = string(argv[2]);
+    }
+    else{
+        input_file = "instance2.txt";
+    }
+    do_GA(input_file);
     ///FOR SUBMIT
     /*
     sort( population->begin(), population->end(), compare);

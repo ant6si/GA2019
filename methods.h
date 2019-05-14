@@ -7,15 +7,20 @@
 using namespace std;
 /// Parameters
 int TIME_LIMIT = 178; //50
+int MAX_NUM; // valid gene length
 int POPULATION_SIZE = 300;     //300;170
-int XOVER_PER_GENERATION = 240;//240;93
-//for selection
+//for crossover
+float XOVER_RATIO = 0.6;
+// for selection
 float MAX_FITNESS = 1.1;
 float MIN_FITNESS = 1;
-
-
+// for mutation
 float MUTATION_RATE = 0.015;//0.015
-int MAX_NUM; // valid gene length
+// for replacement
+float ELITISM_RATE = 0.08;
+// for local optimization
+float OPTIMIZE_RATIO = 0.4;
+
 
 bool compare(Chromosome* c1, Chromosome* c2){
     long sc1 = c1->_score;
@@ -116,7 +121,6 @@ int select_random(){
     int num = rand()%POPULATION_SIZE;
     return num;
 }
-
 /// Crossover
 void xover(Chromosome* offspring, Chromosome* p1, Chromosome* p2, GraphHandler* gh){
 // p1, p2 : parents
@@ -134,7 +138,6 @@ void xover(Chromosome* offspring, Chromosome* p1, Chromosome* p2, GraphHandler* 
     }
     offspring->_sequence = new_seq;
 }
-
 void one_point_xover(Chromosome* offspring, Chromosome* p1, Chromosome* p2, GraphHandler* gh){
     /// Need to Check
     int point = rand()%MAX_NUM;
@@ -146,7 +149,6 @@ void one_point_xover(Chromosome* offspring, Chromosome* p1, Chromosome* p2, Grap
         }
     }
 }
-
 /// Mutation
 void mutation(Chromosome* offspring){
     bitset<L> seq = offspring->_sequence;
@@ -158,7 +160,6 @@ void mutation(Chromosome* offspring){
     }
     offspring->_sequence = seq;
 }
-
 
 /// Replacement
 void replace_worse(vector<Chromosome*>* offsprings, vector<Chromosome*>* population){
@@ -176,11 +177,11 @@ void replace_worse(vector<Chromosome*>* offsprings, vector<Chromosome*>* populat
 }
 
 void replace_elitism(vector<Chromosome*>* offsprings, vector<Chromosome*>* population){
-    // top 30 elitism
     int size = offsprings->size();
+    int top_reserve = int(POPULATION_SIZE * ELITISM_RATE);
     for (int i=0; i<size; i++){
         int r = rand()%POPULATION_SIZE;
-        while(r > POPULATION_SIZE-30){
+        while(r > POPULATION_SIZE-top_reserve){
             r = rand()%POPULATION_SIZE;
         }
         Chromosome* old_c = population->at(r);
@@ -192,16 +193,49 @@ void replace_elitism(vector<Chromosome*>* offsprings, vector<Chromosome*>* popul
 }
 
 /// local optimization
-void local_optimize(Chromosome* chrom){
-    bitset<L> seq = chrom->_sequence;
+void local_optimize_one_chrom(Chromosome* chrom, GraphHandler* gh){
     /// To Do
+    //int init_score = chrom->_score;
+    bitset<L> best_seq= chrom->_sequence;
+    int best_score = chrom-> _score;
+    bool improved = true;
+    while (improved == true){
+        improved = false;
+        for (int i=0; i<MAX_NUM; i++){
+            Chromosome* new_chrom = new Chromosome();
+            new_chrom->_sequence = best_seq.flip(i);
+            regularize(new_chrom, gh);
+            int new_score = new_chrom->_score;
+            if(best_score < new_score){
+                best_seq = new_chrom->_sequence;
+                best_score = new_score;
+                improved = true;
+                i=0;
+            }
+            delete(new_chrom);
+        }
+    }
+    chrom->_sequence = best_seq;
+    chrom->_score = best_score;
+    /*
+    if(init_score<best_score){
+        cout<<"LOCAL OPTIMIZATION WAS SUCCESSFUL"<<endl;
+    }*/
+}
+
+void do_local_optimize(vector<Chromosome*>* population, GraphHandler* gh){
+    int optimize_num = int(POPULATION_SIZE * OPTIMIZE_RATIO);
+    vector<Chromosome*>::reverse_iterator riter(population->rbegin());
+    riter = population->rbegin();
+    for(int i=0; i<optimize_num; i++){
+        local_optimize_one_chrom((*riter), gh);
+        ++riter;
+    }
 }
 
 int get_best_score(vector<Chromosome*>* population){
     Chromosome* best = population->back();
     return best->_score ;
 }
-
-
 
 #endif //GA2019_METHODS_H
